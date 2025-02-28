@@ -15,7 +15,7 @@
   <content>
     <workbench>
       <classname>FreeCAD-WakaTime</classname>
-      <icon>resources/logo.svg</icon>
+      <icon>resources/Logo.svg</icon>
       <depend>wakatime-cli</depend>
     </workbench>
   </content>
