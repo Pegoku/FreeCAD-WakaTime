@@ -2,8 +2,8 @@
 <package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
   <name>FreeCAD-WakaTime</name>
   <description>A simple FreeCAD WakaTime extension.</description>
-  <version>0.5.0</version>
-  <date>2025-5-17</date>
+  <version>0.5.1</version>
+  <date>2025-8-12</date>
   <license file="LICENSE">LGPL-2.1-or-later</license>
   <url branch="main" type="repository">https://github.com/Pegoku/freecad-wakatime.git</url>
   <url type="bugtracker">https://github.com/Pegoku/freecad-wakatime/issues</url>

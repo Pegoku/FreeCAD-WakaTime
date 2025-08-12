@@ -8,7 +8,7 @@ def log_time_to_wakatime(stop_event):
     import inspect
 
     # Version info
-    freecad_wakatime_version = "0.5.0"
+    freecad_wakatime_version = "0.5.1"
     freecad_version = ".".join(App.Version()[:3])
     debug = App.ParamGet("User parameter:Plugins/Wakatime").GetBool("debug", False)
 
