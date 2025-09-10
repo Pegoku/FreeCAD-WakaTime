@@ -3,9 +3,6 @@ def log_time_to_wakatime(stop_event):
     import time
     import os
     import FreeCAD as App
-    import FreeCADGui as Gui
-    import threading
-    import inspect
 
     # Version info
     freecad_wakatime_version = "0.5.1"

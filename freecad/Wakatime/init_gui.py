@@ -1,13 +1,14 @@
-import os
-import FreeCAD as App
-import FreeCADGui as Gui
-import threading
-import inspect
 
-class freecadWakatime(Workbench):
-    MenuText = "FreeCAD WakaTime"
+import FreeCADGui as Gui
+import FreeCAD as App
+
+from .Resources import logo
+
+
+class WakatimeWorkbench(Gui.Workbench):
+    MenuText = "WakaTime"
     ToolTip = "Configuration of FreeCAD WakaTime"
-    Icon = os.path.join(os.path.dirname(inspect.getfile(inspect.currentframe())), "resources", "Logo.svg")
+    Icon = logo
 
     def Initialize(self):
         self.appendToolbar("Wakatime", ["ActivateWakatime"])
@@ -18,7 +19,6 @@ class freecadWakatime(Workbench):
 class ActivateWakatime:
     def __init__(self):
         """Initialize command and resume logging if already active."""
-        from scripts.logWaka import log_time_to_wakatime
         import threading
         self.stop_event = threading.Event()
         self.is_active = App.ParamGet("User parameter:Plugins/Wakatime").GetBool("is_active", False)
@@ -29,13 +29,13 @@ class ActivateWakatime:
 
     def GetResources(self):
         return {
-            'Pixmap': os.path.join(os.path.dirname(inspect.getfile(inspect.currentframe())), "resources", "Logo.svg"),
+            'Pixmap': logo ,
             'MenuText': 'Toggle WakaTime',
             'ToolTip': 'Enable or disable WakaTime logging',
         }
 
     def Activated(self):
-        from scripts.logWaka import check_wakatime
+        from .scripts.logWaka import check_wakatime
         if not check_wakatime():
             App.Console.PrintError("[WakaTime] CLI not available. Installation failed.\n")
             return
@@ -57,7 +57,7 @@ class ActivateWakatime:
 
     def _start_thread(self):
         """Start or restart the WakaTime logging thread."""
-        from scripts.logWaka import log_time_to_wakatime
+        from .scripts.logWaka import log_time_to_wakatime
         import threading
         self.stop_event.clear()
         self.thread = threading.Thread(
@@ -71,5 +71,5 @@ class ActivateWakatime:
         """Return toggle-button state: checked if logging is active."""
         return 1 if self.is_active else 0
 
-Gui.addWorkbench(freecadWakatime())
+Gui.addWorkbench(WakatimeWorkbench())
 Gui.addCommand('ActivateWakatime', ActivateWakatime())
