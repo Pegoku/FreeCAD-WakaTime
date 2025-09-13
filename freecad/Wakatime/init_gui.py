@@ -2,7 +2,9 @@
 import FreeCADGui as Gui
 import FreeCAD as App
 
-from .Resources import logo
+from .Resources import icon
+
+logo = icon('Logo')
 
 
 class WakatimeWorkbench(Gui.Workbench):

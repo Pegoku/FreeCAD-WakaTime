@@ -2,10 +2,15 @@
 import freecad.Wakatime as module
 from importlib import resources
 
-logo : str
 
-way = resources.files(module) / 'Resources/Icons/Logo.svg'
+icons = resources.files(module) / 'Resources/Icons'
 
 
-with resources.as_file(way) as path:
-    logo = str( path )
+def icon ( name : str ):
+
+    file = name + '.svg'
+
+    icon = icons / file
+
+    with resources.as_file(icon) as path:
+        return str( path )
