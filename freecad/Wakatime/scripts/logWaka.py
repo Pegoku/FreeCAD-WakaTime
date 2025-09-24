@@ -96,7 +96,7 @@ def log_time_to_wakatime(stop_event):
 
         else:
             if debug:
-                App.Console.PrintMessage(f"[WakaTime] Next check in 10s.\n")
+                App.Console.PrintMessage(f"[WakaTime-Debug] Next check in 10s.\n")
         time.sleep(10)
 
 
