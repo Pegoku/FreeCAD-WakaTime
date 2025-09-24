@@ -68,7 +68,7 @@ def log_time_to_wakatime(stop_event):
         if last_mod_time and now - last_logged_time > 60 and now - last_mod_time < 60:
             App.Console.PrintMessage(f"[WakaTime] Logging time for project '{projectName}'...\n")
             try:
-                subprocess.call([
+                cmd = [
                     wakatime_cli,
                     '--plugin', f"freecad/{freecad_version} freecad-wakatime/{freecad_wakatime_version}",
                     '--entity-type', 'app',
@@ -76,7 +76,15 @@ def log_time_to_wakatime(stop_event):
                     '--project', projectName,
                     '--language', 'FreeCAD',
                     '--write'
-                ])
+                ]
+                if debug:
+                    App.Console.PrintMessage(f"[WakaTime-Debug] Command: {' '.join(cmd)}\n")
+                
+                result = subprocess.call(cmd)
+                
+                if debug:
+                    App.Console.PrintMessage(f"[WakaTime-Debug] Command result: {result}\n")
+                
                 last_logged_time = time.time()
                 App.Console.PrintMessage("[WakaTime] Time logged.\n")
             except Exception as e:
