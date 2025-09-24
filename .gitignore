@@ -1,6 +1,7 @@
 .history
 *.json
 *.code-workspace
-scripts/__pycache__
+__pycache__
+.venv
 
 *.code-workspace
