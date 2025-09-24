@@ -14,8 +14,8 @@
   <tag>wakatime</tag>
   <content>
     <workbench>
-      <classname>FreeCAD-WakaTime</classname>
-      <icon>resources/Logo.svg</icon>
+      <classname>WakatimeWorkbench</classname>
+      <icon>freecad/Wakatime/Resources/Icons/Logo.svg</icon>
     </workbench>
   </content>
 </package>
