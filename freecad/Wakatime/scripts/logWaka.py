@@ -1,3 +1,5 @@
+
+
 def log_time_to_wakatime(stop_event):
     import subprocess
     import time
@@ -8,23 +10,29 @@ def log_time_to_wakatime(stop_event):
     # Version info
     freecad_wakatime_version = "0.6.0"
     freecad_version = ".".join(App.Version()[:3])
-    debug = App.ParamGet("User parameter:Plugins/Wakatime").GetBool("debug", False)
+    debug = App.ParamGet(
+        "User parameter:Plugins/Wakatime").GetBool("debug", False)
 
     # Timestamps
     last_logged_time = 0
     last_mod_time = 0
 
     # Get the right wakatime-cli dir for mature platforms
-    wakatime_dir = os.path.expanduser("~")
+    user_root = os.path.expanduser("~")
+    wakatime_dir = ""
     match platform.system():
         case "Darwin":
-            wakatime_dir = os.path.join(wakatime_dir, ".wakatime")
+            wakatime_dir = os.path.join(user_root, ".wakatime")
             wakatime_cli = os.path.join(wakatime_dir, "wakatime-cli")
         case "Windows":
-            wakatime_dir = os.path.join(wakatime_dir, "wakatime-cli")
+            wakatime_dir = os.path.join(user_root, "wakatime-cli")
+            if not os.path.exists(wakatime_dir):
+                wakatime_dir = os.path.join(user_root, ".wakatime")
             wakatime_cli = os.path.join(wakatime_dir, "wakatime-cli.exe")
+            if not os.path.exists(wakatime_cli):
+                wakatime_cli = os.path.join(wakatime_dir, "wakatime-cli")
         case "Linux":
-            wakatime_dir = os.path.join(wakatime_dir, "wakatime-cli")
+            wakatime_dir = os.path.join(user_root, "wakatime-cli")
             wakatime_cli = os.path.join(wakatime_dir, "wakatime")
 
     # Debounced observer
@@ -41,7 +49,8 @@ def log_time_to_wakatime(stop_event):
             nonlocal last_mod_time
             last_mod_time = now
             if debug:
-                App.Console.PrintMessage(f"[WakaTime-Debug] Object changed at {now}\n")
+                App.Console.PrintMessage(
+                    f"[WakaTime-Debug] Object changed at {now}\n")
 
     observer = DocumentObserver()
     App.addDocumentObserver(observer)
@@ -54,12 +63,14 @@ def log_time_to_wakatime(stop_event):
         try:
             label = App.ActiveDocument.Label
         except Exception:
-            App.Console.PrintError("[WakaTime] No active document, retrying...\n")
+            App.Console.PrintError(
+                "[WakaTime] No active document, retrying...\n")
             time.sleep(10)
             continue
 
         if label.startswith("Unnamed"):
-            App.Console.PrintMessage("[WakaTime] Please save project to start logging.\n")
+            App.Console.PrintMessage(
+                "[WakaTime] Please save project to start logging.\n")
             time.sleep(10)
             continue
 
@@ -70,7 +81,8 @@ def log_time_to_wakatime(stop_event):
         now = time.time()
         # Log if document was modified in the last 60s and last log older than 60s
         if last_mod_time and now - last_logged_time > 60 and now - last_mod_time < 60:
-            App.Console.PrintMessage(f"[WakaTime] Logging time for project '{projectName}'...\n")
+            App.Console.PrintMessage(
+                f"[WakaTime] Logging time for project '{projectName}'...\n")
             try:
                 cmd = [
                     wakatime_cli,
@@ -79,16 +91,20 @@ def log_time_to_wakatime(stop_event):
                     '--entity', projectName,
                     '--project', projectName,
                     '--language', 'FreeCAD',
+                    '--category', 'designing',
                     '--write'
                 ]
                 if debug:
-                    App.Console.PrintMessage(f"[WakaTime-Debug] Command: {' '.join(cmd)}\n")
-                
-                result = subprocess.call(cmd)
-                
+                    App.Console.PrintMessage(
+                        f"[WakaTime-Debug] Command: {' '.join(cmd)}\n")
+
+                result = subprocess.call(
+                    cmd, creationflags=subprocess.CREATE_NO_WINDOW if platform.system() == "Windows" else 0)
+
                 if debug:
-                    App.Console.PrintMessage(f"[WakaTime-Debug] Command result: {result}\n")
-                
+                    App.Console.PrintMessage(
+                        f"[WakaTime-Debug] Command result: {result}\n")
+
                 last_logged_time = time.time()
                 App.Console.PrintMessage("[WakaTime] Time logged.\n")
             except Exception as e:
@@ -96,7 +112,8 @@ def log_time_to_wakatime(stop_event):
 
         else:
             if debug:
-                App.Console.PrintMessage(f"[WakaTime-Debug] Next check in 10s.\n")
+                App.Console.PrintMessage(
+                    f"[WakaTime-Debug] Next check in 10s.\n")
         time.sleep(10)
 
 
@@ -107,25 +124,33 @@ def check_wakatime():
     import platform
 
     # define cli path
-    wakatime_dir = os.path.expanduser("~")
+    user_root = os.path.expanduser("~")
+    wakatime_dir = user_root
     match platform.system():
         case "Darwin":
-            wakatime_dir = os.path.join(wakatime_dir, ".wakatime")
+            wakatime_dir = os.path.join(user_root, ".wakatime")
             cli = os.path.join(wakatime_dir, "wakatime-cli")
             url = "https://github.com/wakatime/wakatime-cli/releases/latest/download/wakatime-cli-darwin-amd64.zip"
         case "Windows":
-            wakatime_dir = os.path.join(wakatime_dir, "wakatime-cli")
+            wakatime_dir = os.path.join(user_root, "wakatime-cli")
+            if not os.path.exists(wakatime_dir):
+                wakatime_dir = os.path.join(user_root, ".wakatime")
+            cli = os.path.join(wakatime_dir, "wakatime-cli.exe")
+            if not os.path.exists(cli):
+                cli = os.path.join(wakatime_dir, "wakatime-cli")
             url = "https://github.com/wakatime/wakatime-cli/releases/latest/download/wakatime-cli-windows-amd64.zip"
         case "Linux":
-            wakatime_dir = os.path.join(wakatime_dir, "wakatime")
+            wakatime_dir = os.path.join(user_root, "wakatime")
             cli = os.path.join(wakatime_dir, "wakatime")
             url = "https://github.com/wakatime/wakatime-cli/releases/latest/download/wakatime-cli-linux-amd64.zip"
-    
+
     # install if missing
     if not os.path.exists(cli):
         try:
-            import urllib.request, zipfile
-            zip_path = os.path.join(os.path.expanduser("~"), "wakatime-cli.zip")
+            import urllib.request
+            import zipfile
+            zip_path = os.path.join(
+                user_root, "wakatime-cli.zip")
             urllib.request.urlretrieve(url, zip_path)
             with zipfile.ZipFile(zip_path, 'r') as z:
                 z.extractall(wakatime_dir)
@@ -135,7 +160,8 @@ def check_wakatime():
                     src = os.path.join(wakatime_dir, f)
                     dst = cli
                     os.rename(src, dst)
-                    if os.name != 'nt': os.chmod(dst, 0o755)
+                    if os.name != 'nt':
+                        os.chmod(dst, 0o755)
                     break
             os.remove(zip_path)
             return True
