@@ -62,19 +62,14 @@ git pull
 Once installed, the FreeCAD-WakaTime workbench will be available, and you'll be able to enable or disable the tracking of time you spend working on your FreeCAD projects. You can view your coding activity on the WakaTime dashboard.
 
 The add-on automatically detects `wakatime-cli` or `wakatime` in `~/.local/bin`
-and on `PATH`. To use a CLI installed somewhere else, run this in FreeCAD's
-Python console and restart FreeCAD:
+and on `PATH`. To use a CLI installed somewhere else, open **Tools > Edit
+parameters...** in FreeCAD, navigate to `User parameter:Plugins/Wakatime`, and
+add a string value named `cli_path` containing the full executable path. This is
+the same parameter group where the `debug` boolean is configured. Restart
+FreeCAD after changing the path.
 
-```python
-App.ParamGet("User parameter:Plugins/Wakatime").SetString("cli_path", "/path/to/wakatime")
-```
-
-For example, an Arch Linux user installation can be selected explicitly with:
-
-```python
-import os
-App.ParamGet("User parameter:Plugins/Wakatime").SetString("cli_path", os.path.expanduser("~/.local/bin/wakatime"))
-```
+For example, an Arch Linux user installation can use
+`/home/<username>/.local/bin/wakatime` as the `cli_path` value.
 
 Usually no override is necessary for `~/.local/bin/wakatime`, because that
 location is detected automatically.
