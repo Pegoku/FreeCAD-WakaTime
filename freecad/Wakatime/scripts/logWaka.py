@@ -1,8 +1,50 @@
+def resolve_wakatime_cli(configured_path="", system=None, home=None, path_lookup=None):
+    """Return the configured, installed, or legacy WakaTime CLI path."""
+    import os
+    import platform
+    import shutil
+
+    if configured_path:
+        return os.path.abspath(os.path.expanduser(os.path.expandvars(configured_path)))
+
+    system = system or platform.system()
+    home = home or os.path.expanduser("~")
+    path_lookup = path_lookup or shutil.which
+
+    if system == "Windows":
+        executable_names = ("wakatime-cli.exe", "wakatime.exe")
+        legacy_cli = os.path.join(home, "wakatime-cli", "wakatime-cli.exe")
+    else:
+        executable_names = ("wakatime-cli", "wakatime")
+        legacy_cli = (
+            os.path.join(home, ".wakatime", "wakatime-cli")
+            if system == "Darwin"
+            else os.path.join(home, "wakatime", "wakatime")
+        )
+
+    # GUI applications do not always inherit the shell's PATH, so check the
+    # standard per-user binary directory explicitly before consulting PATH.
+    local_bin = os.path.join(home, ".local", "bin")
+    for executable_name in executable_names:
+        candidate = os.path.join(local_bin, executable_name)
+        if os.path.isfile(candidate):
+            return candidate
+
+    for executable_name in executable_names:
+        candidate = path_lookup(executable_name)
+        if candidate:
+            return candidate
+
+    return legacy_cli
+
+
+def _configured_cli_path(App):
+    return App.ParamGet("User parameter:Plugins/Wakatime").GetString("cli_path", "")
+
+
 def log_time_to_wakatime(stop_event):
     import subprocess
     import time
-    import os
-    import platform
     import FreeCAD as App
 
     # Version info
@@ -14,18 +56,7 @@ def log_time_to_wakatime(stop_event):
     last_logged_time = 0
     last_mod_time = 0
 
-    # Get the right wakatime-cli dir for mature platforms
-    wakatime_dir = os.path.expanduser("~")
-    match platform.system():
-        case "Darwin":
-            wakatime_dir = os.path.join(wakatime_dir, ".wakatime")
-            wakatime_cli = os.path.join(wakatime_dir, "wakatime-cli")
-        case "Windows":
-            wakatime_dir = os.path.join(wakatime_dir, "wakatime-cli")
-            wakatime_cli = os.path.join(wakatime_dir, "wakatime-cli.exe")
-        case "Linux":
-            wakatime_dir = os.path.join(wakatime_dir, "wakatime-cli")
-            wakatime_cli = os.path.join(wakatime_dir, "wakatime")
+    wakatime_cli = resolve_wakatime_cli(_configured_cli_path(App))
 
     # Debounced observer
     class DocumentObserver:
@@ -83,12 +114,12 @@ def log_time_to_wakatime(stop_event):
                 ]
                 if debug:
                     App.Console.PrintMessage(f"[WakaTime-Debug] Command: {' '.join(cmd)}\n")
-                
+
                 result = subprocess.call(cmd)
-                
+
                 if debug:
                     App.Console.PrintMessage(f"[WakaTime-Debug] Command result: {result}\n")
-                
+
                 last_logged_time = time.time()
                 App.Console.PrintMessage("[WakaTime] Time logged.\n")
             except Exception as e:
@@ -106,21 +137,28 @@ def check_wakatime():
     import FreeCAD as App
     import platform
 
-    # define cli path
+    configured_cli = _configured_cli_path(App)
+    cli = resolve_wakatime_cli(configured_cli)
+
+    if configured_cli and not os.path.isfile(cli):
+        App.Console.PrintError(
+            f"[WakaTime] Configured CLI does not exist: {cli}\n"
+        )
+        return False
+
+    # Define the legacy install location used by this add-on as a fallback.
     wakatime_dir = os.path.expanduser("~")
     match platform.system():
         case "Darwin":
             wakatime_dir = os.path.join(wakatime_dir, ".wakatime")
-            cli = os.path.join(wakatime_dir, "wakatime-cli")
             url = "https://github.com/wakatime/wakatime-cli/releases/latest/download/wakatime-cli-darwin-amd64.zip"
         case "Windows":
             wakatime_dir = os.path.join(wakatime_dir, "wakatime-cli")
             url = "https://github.com/wakatime/wakatime-cli/releases/latest/download/wakatime-cli-windows-amd64.zip"
         case "Linux":
             wakatime_dir = os.path.join(wakatime_dir, "wakatime")
-            cli = os.path.join(wakatime_dir, "wakatime")
             url = "https://github.com/wakatime/wakatime-cli/releases/latest/download/wakatime-cli-linux-amd64.zip"
-    
+
     # install if missing
     if not os.path.exists(cli):
         try:
